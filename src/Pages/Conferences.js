@@ -75,18 +75,6 @@ const Conferences = (props) => {
     let isVideo = false;
     const [messages, setMessages] = React.useState([]);
 
-    // const options = {
-    //     serviceUrl: 'wss://beta.meet.jit.si/xmpp-websocket',
-    //     hosts: {
-    //         domain: 'beta.meet.jit.si',
-    //         muc: 'conference.beta.meet.jit.si', // FIXME: use XEP-0030
-    //         // focus: 'focus.meet.jit.si',
-    //     },
-    //     bosh: 'https://beta.meet.jit.si/http-bind', // FIXME: use xep-0156 for that
-    //     clientNode: "https://beta.jitsi.org/jitsimeet",
-    //     useStunTurn: true
-    // };
-
     const options = {
         hosts: {
             domain: Str.STR_DNS_NAME,

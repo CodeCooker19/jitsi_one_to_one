@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Switch, Redirect, Route, HashRouter } from 'react-router-dom';
+import { Switch, Route, HashRouter } from 'react-router-dom';
 
 import {
-    CreateRoom as CreateRoom,
-    Conferences as Conferences
+    Login as Login,
+    Conferences as Conferences,
+    MainPage as MainPage
 } from './Pages'
 
 class Routes extends Component {
@@ -11,7 +12,8 @@ class Routes extends Component {
         return (
             <HashRouter>
                 <Switch>
-                    <Route exact path="/" component={CreateRoom} />
+                    <Route exact path="/" component={Login} />
+                    <Route exact path="/mainpage/:userId" component={MainPage} />
                     <Route exact path="/conferences/:roomname/:name" component={Conferences} />
                 </Switch>
             </HashRouter >

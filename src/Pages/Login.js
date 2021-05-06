@@ -54,7 +54,7 @@ const CreateRoom = (props) => {
   }
 
   const clickLogin = () => {
-    if(userId === '')
+    if (userId === '')
       return;
     history.push('/mainpage/' + userId);
   }

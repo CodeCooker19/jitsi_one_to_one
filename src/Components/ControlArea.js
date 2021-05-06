@@ -86,48 +86,24 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const ControlArea = (props) => {
-    const { onClickChat } = props;
-
     const classes = useStyles();
-
     const [mic, setMic] = useState(true);
     const [cam, setCam] = useState(true);
-    const [micCount, setMicCount] = useState(0);
-    const [camCount, setCamCount] = useState(0);
 
     const onClickMic = () => {
         sessionStorage.setItem('mic', !mic);
         setMic(!mic);
+        props.onClickMic();
     }
 
     const onClickCam = () => {
         sessionStorage.setItem('camera', !cam);
         setCam(!cam);
+        props.onClickCamera();
     }
-    React.useEffect(() => {
-        if (micCount !== 1) {
-            props.onClickMic();
-        }
-        setMicCount(micCount + 1);
-    }, [mic])
-    React.useEffect(() => {
-        if (camCount !== 1) {
-            props.onClickCamera();
-        }
-        setCamCount(camCount + 1);
-    }, [cam])
-    setInterval(function () {
-        if (JSON.parse(sessionStorage.getItem('mic')) !== undefined && mic != JSON.parse(sessionStorage.getItem('mic'))) {
-            setMic(JSON.parse(sessionStorage.getItem('mic')));
-        }
-        if (JSON.parse(sessionStorage.getItem('camera')) !== undefined && cam != JSON.parse(sessionStorage.getItem('camera'))) {
-            setCam(JSON.parse(sessionStorage.getItem('camera')))
-        }
-    }, 1000)
 
     return (
         <div className={classes.root}>
-            <ChatBubbleOutlineIcon className={classes.style_chat} onClick={() => props.onClickChat()} />
             <div className={classes.white_circle} onClick={onClickMic} >
                 {mic ? <MicOffIcon className={classes.styles_icon_device} /> : <MicIcon className={classes.styles_icon_device} />}
             </div>
@@ -137,12 +113,8 @@ const ControlArea = (props) => {
             <div className={classes.white_circle} onClick={onClickCam} >
                 {cam ? <VideocamOffIcon className={classes.styles_icon_device} /> : <VideocamIcon className={classes.styles_icon_device} />}
             </div>
-            <PanToolIcon className={classes.style_hand} onClick={() => props.onClickHand()} />
-            {/* <ScreenShareIcon className={classes.style_screenshare} onClick={()=>props.onClickScreenShare()}/>
-            <AppsIcon className={classes.style_multiview} /> */}
         </div>
     )
-
 }
 
 ControlArea.prototype = {

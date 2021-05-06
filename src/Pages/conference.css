@@ -1,3 +1,13 @@
-div::-webkit-scrollbar {
-    display: none;
+.box.draggable-room-background{
+    width: 100vh;
+    height: 60vh;
+    z-index: 2;
+    box-shadow: 0.125rem 0 1.2rem rgb(4, 181, 250); 
+    border-radius: 6px;
+}
+.show {
+    visibility: visible;
+}
+.hide {
+    visibility: hidden;
 }

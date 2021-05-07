@@ -50,8 +50,9 @@ const CssTextField = withStyles({
 const CreateRoom = (props) => {
     const classes = useStyles();
     const { history } = props;
+    const [isShowCall, setIsShowCall] = useState(false);
     const [otherUserId, setOtherUserId] = useState('');
-    const [isShowCall, setIsShowCall] = useState(true);
+    const [isVideoCall, setIsVideoCall] = useState(false);
 
     const changeOtherUserId = (event) => {
         setOtherUserId(event.target.value);
@@ -60,11 +61,19 @@ const CreateRoom = (props) => {
     const clickVideoCall = () => {
         if (otherUserId === '')
             return;
+
+        setIsShowCall(true);
+        setIsVideoCall(true);
+        setOtherUserId(otherUserId);
     }
 
     const clickAudioCall = () => {
         if (otherUserId === '')
             return;
+
+        setIsShowCall(true);
+        setIsVideoCall(false);
+        setOtherUserId(otherUserId);
     }
 
     const clickLogout = () => {
@@ -76,7 +85,7 @@ const CreateRoom = (props) => {
             <Draggable>
                 <div className={isShowCall ? "box draggable-room-background show" : "box draggable-room-background hide"} style={{ position: 'absolute', top: '20px', right: '20px' }}>
                     {isShowCall ?
-                        <Conference />
+                        <Conference setIsShowCall={setIsShowCall} userId={props.match.params.userId} otherUserId={otherUserId} isVideoCall={isVideoCall}/>
                         :
                         null
                     }

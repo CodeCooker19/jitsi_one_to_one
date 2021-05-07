@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import { Switch, Route, HashRouter } from 'react-router-dom';
 
 import {
-    Login as Login,
-    MainPage as MainPage
+    Login,
+    MainPage
 } from './Pages'
 
 class Routes extends Component {

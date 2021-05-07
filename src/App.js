@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { Router } from 'react-router-dom';
 import { createBrowserHistory } from 'history';
-import validate from 'validate.js';
 import Routes from './Routes';
 import { ThemeProvider } from '@material-ui/styles';
 import theme from './theme';

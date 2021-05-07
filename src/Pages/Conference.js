@@ -38,16 +38,17 @@ const useStyle = makeStyles(() => ({
         borderRadius: '6px',
         visibility: 'collapse'
     },
-    main_video_area: {
-        width: '30%',
-        height: '30%',
+    local_video_area: {
+        width: '20%',
         position: 'absolute',
         display: 'flex',
         right: '5px',
         top: '5px',
         zIndex: '5',
+        background: 'black',
+        border: 'red solid 1px'
     },
-    main_video: {
+    local_video: {
         width: '100%',
         height: '100%'
     },
@@ -62,27 +63,22 @@ const useStyle = makeStyles(() => ({
 }))
 
 const Conference = (props) => {
-    const { history } = props;
     const classes = useStyle();
-    const [isHold, setHold] = useState(false);
-    const [isMuted, setMuted] = useState(false);
-    const [roomJoinded, setRoomJoined] = useState(false);
     const [localVideoTrack, setLocalVideoTrack] = useState([]);
     const [localAudioTrack, setLocalAudioTrack] = useState([]);
-    const [userVideoTrack, setUserVideoTrack] = useState(null);
-    const [userAudioTrack, setUserAudioTrack] = useState(null);
+    const [otherVideoTrack, setOtherVideoTrack] = useState(null);
+    const [otherAudioTrack, setOtherAudioTrack] = useState(null);
+    const otherParticipant = React.useRef(null);
+    const [isMuted, setMuted] = useState(false);
     const room = React.useRef(null);
-    const receptionId = React.useRef(null);
-    const receptionName = React.useRef("");
-    const isSignalAccept = React.useRef(false);
-    const callStatus = React.useRef(false);
     const isLeave = React.useRef(false);
-    const offLine = React.useRef(false);
-    let listRemouteUsers = [];
-    let listRemoteUserData = [];
     let localTracks = [];
     let connection = null;
     let isJoined = false;
+
+    // const offLine = React.useRef(false);
+    // let listRemouteUsers = [];
+    // let listRemoteUserData = [];
 
     const options = {
         hosts: {
@@ -120,12 +116,12 @@ const Conference = (props) => {
             connection.addEventListener(window.JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED, disconnect);
             connection.connect();
 
-            window.JitsiMeetJS.createLocalTracks({ devices: ['audio'] })
+            window.JitsiMeetJS.createLocalTracks({ devices: [Constants.STR_VIDEO] })
                 .then(onLocalTracks)
                 .catch(error => {
                     console.log(error)
                 });
-            window.JitsiMeetJS.createLocalTracks({ devices: ['video'] })
+            window.JitsiMeetJS.createLocalTracks({ devices: [Constants.STR_VIDEO] })
                 .then(onLocalTracks)
                 .catch(error => {
                     console.log(error)
@@ -140,27 +136,15 @@ const Conference = (props) => {
         room.current.on(window.JitsiMeetJS.events.conference.DISPLAY_NAME_CHANGED, onChangeName);
         room.current.on(window.JitsiMeetJS.events.conference.CONFERENCE_JOINED, onConferenceJoined);
         room.current.on(window.JitsiMeetJS.events.conference.USER_JOINED, (id, user) => {
-            let isFind = false;
-            listRemouteUsers.map((cell, index) => {
-                if (cell.id === id) {
-                    cell.user = user;
-                    listRemouteUsers[index] = cell;
-                    isFind = true;
-                }
-            });
-            if (isFind) {
-                return;
+            if (user.getDisplayName() === props.otherUserId) {
+                otherParticipant.current = id;
             }
-            let new_user = { id: id, user: user };
-            listRemouteUsers.push(new_user);
         });
         room.current.on(window.JitsiMeetJS.events.conference.PARTICIPANT_PROPERTY_CHANGED, handleParticipantPropertyChange);
         room.current.on(window.JitsiMeetJS.events.conference.USER_LEFT, onUserLeft);
         room.current.on(window.JitsiMeetJS.events.conference.CONFERENCE_LEFT, onConferenceLeft);
         room.current.on(window.JitsiMeetJS.events.conference.TRACK_MUTE_CHANGED, track => {
-            console.log(`${track.getType()} - ${track.isMuted()}`);
-            var participant = track.getParticipantId();
-            if (track.getType() == 'video' && track.getParticipantId() == receptionId.current) {
+            if (track.getType() === Constants.STR_VIDEO && track.getParticipantId() === otherParticipant.current) {
                 setMuted(track.isMuted());
             }
         });
@@ -184,11 +168,11 @@ const Conference = (props) => {
 
     function unload() {
         if (localVideoTrack.length !== 0) {
-            localVideoTrack.detach($(`#mainVideo`)[0]);
+            localVideoTrack.detach($(`#localVideo`)[0]);
         }
 
         if (localAudioTrack.length !== 0) {
-            localAudioTrack.detach($(`#mainAudio`)[0]);
+            localAudioTrack.detach($(`#localAudio`)[0]);
         }
 
         for (let i = 0; i < localTracks.length; i++) {
@@ -202,7 +186,7 @@ const Conference = (props) => {
     }
 
     const onLocalTracks = (tracks) => {
-        tracks.map((localTrack, index) => {
+        tracks.map((localTrack) => {
             localTrack.addEventListener(
                 window.JitsiMeetJS.events.track.TRACK_AUDIO_LEVEL_CHANGED,
                 audioLevel => console.log(`Audio Level local: ${audioLevel}`));
@@ -218,11 +202,11 @@ const Conference = (props) => {
             localTrack.addEventListener(window.JitsiMeetJS.events.track.TRACK_AUDIO_OUTPUT_CHANGED,
                 deviceId =>
                     console.log(`track audio output device was changed to ${deviceId}`));
-            if (localTrack.getType() === 'video') {
-                localTrack.attach($(`#mainVideo`)[0]);
+            if (localTrack.getType() === Constants.STR_VIDEO) {
+                localTrack.attach($(`#localVideo`)[0]);
                 setLocalVideoTrack(localTrack);
-            } else if (localTrack.getType() === 'audio') {
-                localTrack.attach($(`#mainAudio`)[0]);
+            } else if (localTrack.getType() === Constants.STR_AUDIO) {
+                localTrack.attach($(`#localAudio`)[0]);
                 setLocalAudioTrack(localTrack);
             }
 
@@ -235,29 +219,32 @@ const Conference = (props) => {
 
     const onRemoteTrack = (track) => {
         if (track.isLocal()) {
-            // regist video particant id on db
-            if (track.getType() === 'video') {
-
-            }
             return;
         }
 
         //---save all tracks incoming----
         const participant = track.getParticipantId();
         const type = track.getType();
-        
-        return;
+        if (participant === otherParticipant.current) {
+            if (type === Constants.STR_VIDEO) {
+                track.attach($(`#otherVideo`)[0]);
+                setOtherVideoTrack(track);
+            } else if (type === Constants.STR_AUDIO) {
+                track.attach($(`#otherAudio`)[0]);
+                setOtherAudioTrack(track);
+            }
+        }
     }
 
     const onRemoveTrack = (track) => {
         const participant = track.getParticipantId();
         const type = track.getType();
-        if (type === "video" && participant === receptionId.current && $(`#userVideo`)[0] !== undefined) {
-            track.detach($(`#userVideo`)[0]);
+        if (type === "video" && participant === otherParticipant.current && $(`#otherVideo`)[0] !== undefined) {
+            track.detach($(`#otherVideo`)[0]);
         }
 
-        if (type === "audio" && participant === receptionId.current && $(`#userAudio`)[0] !== undefined) {
-            track.detach($(`#userAudio`)[0]);
+        if (type === "audio" && participant === otherParticipant.current && $(`#otherAudio`)[0] !== undefined) {
+            track.detach($(`#otherAudio`)[0]);
         }
     }
 
@@ -272,7 +259,6 @@ const Conference = (props) => {
         }
 
         isJoined = true;
-        setRoomJoined(true);
         localTracks.map((localTrack) => {
             room.current.addTrack(localTrack);
             room.current.setDisplayName(props.match.params.userId);
@@ -280,18 +266,8 @@ const Conference = (props) => {
     }
 
     function onUserLeft(id, user) {
-        let remove = -1;
-        listRemouteUsers.map((cell, index) => {
-            if (cell.id === id) {
-                remove = index;
-                if (cell.user.getDisplayName() === receptionName.current) {
-                    callEnd();
-                }
-            }
-        });
-
-        if (remove !== -1) {
-            listRemouteUsers.splice(remove, 1);
+        if (user.getDisplayName() === props.otherUserId) {
+            callEnd();
         }
     }
 
@@ -304,16 +280,14 @@ const Conference = (props) => {
     }
 
     function callEnd() {
-        receptionName.current = "";
-        receptionId.current = null;
-        if (userVideoTrack !== null) {
-            userVideoTrack.detach($(`#userVideo`)[0]);
-            setUserVideoTrack(null);
+        if (otherVideoTrack !== null) {
+            otherVideoTrack.detach($(`#otherVideo`)[0]);
+            setOtherVideoTrack(null);
         }
 
-        if (userAudioTrack !== null) {
-            userAudioTrack.detach($(`#userAudio`)[0]);
-            setUserAudioTrack(null);
+        if (otherAudioTrack !== null) {
+            otherAudioTrack.detach($(`#otherAudio`)[0]);
+            setOtherAudioTrack(null);
         }
     }
 
@@ -347,21 +321,21 @@ const Conference = (props) => {
         localVideoTrack.addEventListener(
             window.JitsiMeetJS.events.track.TRACK_MUTE_CHANGED,
             () => console.log('local track muted'));
-        localVideoTrack.attach($(`#mainVideo`)[0]);
+        localVideoTrack.attach($(`#localVideo`)[0]);
         if (room.current !== null)
             room.current.addTrack(localVideoTrack);
     }, [localVideoTrack]);
 
     return (
         <div className={classes.root}>
-            <div className={classes.main_video_area}>
-                <video className={classes.main_video} autoPlay='1' id='mainVideo' playsInline/>
-                <audio autoPlay='1' muted='1' id='mainAudio' />
+            <div className={classes.local_video_area}>
+                <video className={classes.local_video} autoPlay='1' id='localVideo' playsInline />
+                <audio autoPlay='1' muted='1' id='localAudio' />
             </div>
             <div className={classes.video_area}>
-                <video className={classes.user_video} autoPlay='1' id='userVideo' playsInline />
-                <audio autoPlay='1' id='userAudio' />
-                <div className={classes.black_div} style={{ visibility: isMuted == true ? 'visible' : 'collapse' }}></div>
+                <video className={classes.local_video} autoPlay='1' id='otherVideo' playsInline />
+                <audio autoPlay='1' id='otherAudio' />
+                <div className={classes.black_div} style={{ visibility: isMuted === true ? 'visible' : 'collapse' }}></div>
             </div>
             <div className={classes.control_area}>
                 <ControlArea onClickCamera={handleClickCamera} onClickMic={handleClickMic} onClickCallEnd={handleCallEnd} />

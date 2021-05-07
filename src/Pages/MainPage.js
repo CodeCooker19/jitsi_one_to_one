@@ -48,6 +48,7 @@ const CssTextField = withStyles({
 })(TextField);
 
 const CreateRoom = (props) => {
+    const {history} = props;
     const classes = useStyles();
     const [isShowCall, setIsShowCall] = useState(false);
     const [otherUserId, setOtherUserId] = useState('');
@@ -77,6 +78,10 @@ const CreateRoom = (props) => {
     }
 
     const clickLogout = () => {
+        if (isShowCall === false){
+            history.push('/');
+            return;
+        }
         setIsLogout(true);
         setIsShowCall(false);
     }

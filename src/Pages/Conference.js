@@ -124,6 +124,8 @@ const Conference = (props) => {
         }
         else {
             unload();
+            if (props.isLogout)
+                history.push('/');
         }
     }, [props.isShowCall]);
 
@@ -181,9 +183,6 @@ const Conference = (props) => {
             room.current.leave();
             room.current = null;
         }
-
-        if (props.isLogout)
-            history.push('/');
     }
 
     const onLocalTracks = (tracks) => {

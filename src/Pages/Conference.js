@@ -71,14 +71,11 @@ const Conference = (props) => {
     const otherParticipant = React.useRef(null);
     const [isMuted, setMuted] = useState(false);
     const room = React.useRef(null);
+    const isCallEnd = React.useRef(false);
     const isLeave = React.useRef(false);
     let localTracks = [];
     let connection = null;
     let isJoined = false;
-
-    // const offLine = React.useRef(false);
-    // let listRemouteUsers = [];
-    // let listRemoteUserData = [];
 
     const options = {
         hosts: {
@@ -100,34 +97,39 @@ const Conference = (props) => {
     }
 
     useEffect(() => {
-        if (window.JitsiMeetJS) {
-            if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
-                console.log("enumerateDevices() not supported.");
-                return;
+        if (props.isShowCall) {
+            if (window.JitsiMeetJS) {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) {
+                    console.log("enumerateDevices() not supported.");
+                    return;
+                }
+
+                window.$ = $
+                window.jQuery = $
+                window.JitsiMeetJS.init(initOptions);
+                connection = new window.JitsiMeetJS.JitsiConnection(null, null, options);
+
+                connection.addEventListener(window.JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED, onConnectionSuccess);
+                connection.addEventListener(window.JitsiMeetJS.events.connection.CONNECTION_FAILED, onConnectionFailed);
+                connection.addEventListener(window.JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED, disconnect);
+                connection.connect();
+
+                window.JitsiMeetJS.createLocalTracks({ devices: [Constants.STR_VIDEO] })
+                    .then(onLocalTracks)
+                    .catch(error => {
+                        console.log(error)
+                    });
+                window.JitsiMeetJS.createLocalTracks({ devices: [Constants.STR_VIDEO] })
+                    .then(onLocalTracks)
+                    .catch(error => {
+                        console.log(error)
+                    });
             }
-
-            window.$ = $
-            window.jQuery = $
-            window.JitsiMeetJS.init(initOptions);
-            connection = new window.JitsiMeetJS.JitsiConnection(null, null, options);
-
-            connection.addEventListener(window.JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED, onConnectionSuccess);
-            connection.addEventListener(window.JitsiMeetJS.events.connection.CONNECTION_FAILED, onConnectionFailed);
-            connection.addEventListener(window.JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED, disconnect);
-            connection.connect();
-
-            window.JitsiMeetJS.createLocalTracks({ devices: [Constants.STR_VIDEO] })
-                .then(onLocalTracks)
-                .catch(error => {
-                    console.log(error)
-                });
-            window.JitsiMeetJS.createLocalTracks({ devices: [Constants.STR_VIDEO] })
-                .then(onLocalTracks)
-                .catch(error => {
-                    console.log(error)
-                });
         }
-    }, []);
+        else {
+            unload();
+        }
+    }, [props.isShowCall]);
 
     const onConnectionSuccess = () => {
         room.current = connection.initJitsiConference(Constants.STR_ROOM_NAME, confOptions);
@@ -181,6 +183,7 @@ const Conference = (props) => {
 
         if (room.current !== null) {
             room.current.leave();
+            room.current = null;
         }
         props.setIsShowCall(false);
     }
@@ -195,10 +198,7 @@ const Conference = (props) => {
                 () => console.log('>>>>>>>>>local track muted'));
             localTrack.addEventListener(
                 window.JitsiMeetJS.events.track.LOCAL_TRACK_STOPPED,
-                () => {
-                    console.log('>>>>>>>>local track stoped', (new Date()).getTime());
-                    unload();
-                });
+                () => console.log('>>>>>>>>local track stoped'));
             localTrack.addEventListener(window.JitsiMeetJS.events.track.TRACK_AUDIO_OUTPUT_CHANGED,
                 deviceId =>
                     console.log(`track audio output device was changed to ${deviceId}`));
@@ -265,30 +265,27 @@ const Conference = (props) => {
         });
     }
 
-    function onUserLeft(id, user) {
+    const onUserLeft = (id, user) => {
         if (user.getDisplayName() === props.otherUserId) {
-            callEnd();
+            if (otherVideoTrack !== null) {
+                otherVideoTrack.detach($(`#otherVideo`)[0]);
+                setOtherVideoTrack(null);
+            }
+            if (otherAudioTrack !== null) {
+                otherAudioTrack.detach($(`#otherAudio`)[0]);
+                setOtherAudioTrack(null);
+            }
+            if (!isCallEnd.current)
+                props.setIsShowCall();
         }
     }
 
-    function onConferenceLeft() {
+    const onConferenceLeft = () => {
 
     }
 
     const handleParticipantPropertyChange = (participant, propertyName, oldValue, newValue) => {
 
-    }
-
-    function callEnd() {
-        if (otherVideoTrack !== null) {
-            otherVideoTrack.detach($(`#otherVideo`)[0]);
-            setOtherVideoTrack(null);
-        }
-
-        if (otherAudioTrack !== null) {
-            otherAudioTrack.detach($(`#otherAudio`)[0]);
-            setOtherAudioTrack(null);
-        }
     }
 
     const handleClickCamera = () => {
@@ -312,7 +309,8 @@ const Conference = (props) => {
     }
 
     const handleCallEnd = async () => {
-        unload();
+        isCallEnd.current = true;
+        props.setIsShowCall();
     }
 
     useEffect(() => {

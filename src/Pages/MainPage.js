@@ -77,6 +77,7 @@ const CreateRoom = (props) => {
     }
 
     const clickLogout = () => {
+        setIsShowCall(false);
         history.push('/');
     }
 
@@ -84,11 +85,7 @@ const CreateRoom = (props) => {
         <div className={classes.root}>
             <Draggable>
                 <div className={isShowCall ? "box draggable-room-background show" : "box draggable-room-background hide"} style={{ position: 'absolute', top: '20px', right: '20px' }}>
-                    {isShowCall ?
-                        <Conference setIsShowCall={setIsShowCall} userId={props.match.params.userId} otherUserId={otherUserId} isVideoCall={isVideoCall}/>
-                        :
-                        null
-                    }
+                    <Conference setIsShowCall={setIsShowCall} isShowCall={isShowCall} userId={props.match.params.userId} otherUserId={otherUserId} isVideoCall={isVideoCall}/>
                 </div>
             </Draggable>
             <Grid className={classes.container} container direction="column" justify="center" alignItems="center">

@@ -63,6 +63,7 @@ const useStyle = makeStyles(() => ({
 }))
 
 const Conference = (props) => {
+    const { history } = props;
     const classes = useStyle();
     const [localVideoTrack, setLocalVideoTrack] = useState([]);
     const [localAudioTrack, setLocalAudioTrack] = useState([]);
@@ -114,12 +115,7 @@ const Conference = (props) => {
                 connection.addEventListener(window.JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED, disconnect);
                 connection.connect();
 
-                window.JitsiMeetJS.createLocalTracks({ devices: [Constants.STR_VIDEO] })
-                    .then(onLocalTracks)
-                    .catch(error => {
-                        console.log(error)
-                    });
-                window.JitsiMeetJS.createLocalTracks({ devices: [Constants.STR_VIDEO] })
+                window.JitsiMeetJS.createLocalTracks({ devices: [Constants.STR_AUDIO, Constants.STR_VIDEO] })
                     .then(onLocalTracks)
                     .catch(error => {
                         console.log(error)
@@ -185,7 +181,9 @@ const Conference = (props) => {
             room.current.leave();
             room.current = null;
         }
-        props.setIsShowCall(false);
+
+        if (props.isLogout)
+            history.push('/');
     }
 
     const onLocalTracks = (tracks) => {
@@ -276,7 +274,7 @@ const Conference = (props) => {
                 setOtherAudioTrack(null);
             }
             if (!isCallEnd.current)
-                props.setIsShowCall();
+                props.setIsShowCall(false);
         }
     }
 
@@ -312,17 +310,6 @@ const Conference = (props) => {
         isCallEnd.current = true;
         props.setIsShowCall();
     }
-
-    useEffect(() => {
-        if (localVideoTrack.length === 0)
-            return;
-        localVideoTrack.addEventListener(
-            window.JitsiMeetJS.events.track.TRACK_MUTE_CHANGED,
-            () => console.log('local track muted'));
-        localVideoTrack.attach($(`#localVideo`)[0]);
-        if (room.current !== null)
-            room.current.addTrack(localVideoTrack);
-    }, [localVideoTrack]);
 
     return (
         <div className={classes.root}>

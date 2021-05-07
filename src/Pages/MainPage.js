@@ -49,10 +49,10 @@ const CssTextField = withStyles({
 
 const CreateRoom = (props) => {
     const classes = useStyles();
-    const { history } = props;
     const [isShowCall, setIsShowCall] = useState(false);
     const [otherUserId, setOtherUserId] = useState('');
     const [isVideoCall, setIsVideoCall] = useState(false);
+    const [isLogout, setIsLogout] = useState(false);
 
     const changeOtherUserId = (event) => {
         setOtherUserId(event.target.value);
@@ -77,15 +77,15 @@ const CreateRoom = (props) => {
     }
 
     const clickLogout = () => {
+        setIsLogout(true);
         setIsShowCall(false);
-        history.push('/');
     }
 
     return (
         <div className={classes.root}>
             <Draggable>
                 <div className={isShowCall ? "box draggable-room-background show" : "box draggable-room-background hide"} style={{ position: 'absolute', top: '20px', right: '20px' }}>
-                    <Conference setIsShowCall={setIsShowCall} isShowCall={isShowCall} userId={props.match.params.userId} otherUserId={otherUserId} isVideoCall={isVideoCall}/>
+                    <Conference setIsShowCall={setIsShowCall} isShowCall={isShowCall} userId={props.match.params.userId} otherUserId={otherUserId} isVideoCall={isVideoCall} isLogout={isLogout}/>
                 </div>
             </Draggable>
             <Grid className={classes.container} container direction="column" justify="center" alignItems="center">

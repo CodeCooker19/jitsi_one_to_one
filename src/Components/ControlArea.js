@@ -81,29 +81,25 @@ const useStyles = makeStyles((theme) => ({
 
 const ControlArea = (props) => {
     const classes = useStyles();
-    const [mic, setMic] = useState(true);
-    const [cam, setCam] = useState(true);
 
     const onClickMic = () => {
-        setMic(!mic);
         props.onClickMic();
     }
 
     const onClickCam = () => {
-        setCam(!cam);
         props.onClickCamera();
     }
 
     return (
         <div className={classes.root}>
             <div className={classes.white_circle} onClick={onClickMic} >
-                {mic ?  <MicIcon className={classes.styles_icon_device} /> : <MicOffIcon className={classes.styles_icon_device} />}
+                {props.mic ?  <MicIcon className={classes.styles_icon_device} /> : <MicOffIcon className={classes.styles_icon_device} />}
             </div>
             <div className={classes.red_circle} onClick={() => props.onClickCallEnd()}>
                 <CallIcon className={classes.styles_phone_icon} />
             </div>
             <div className={classes.white_circle} onClick={onClickCam} >
-                {cam ?  <VideocamIcon className={classes.styles_icon_device} /> : <VideocamOffIcon className={classes.styles_icon_device} />}
+                {props.camera ?  <VideocamIcon className={classes.styles_icon_device} /> : <VideocamOffIcon className={classes.styles_icon_device} />}
             </div>
         </div>
     )

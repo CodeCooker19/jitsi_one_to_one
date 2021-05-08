@@ -58,7 +58,8 @@ const useStyle = makeStyles(() => ({
         position: 'absolute',
         marginBottom: '30px',
         display: 'flex',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        zIndex: '2'
     },
 }))
 
@@ -69,6 +70,8 @@ const Conference = (props) => {
     const [localAudioTrack, setLocalAudioTrack] = useState([]);
     const [otherVideoTrack, setOtherVideoTrack] = useState(null);
     const [otherAudioTrack, setOtherAudioTrack] = useState(null);
+    const [camera, setCamera] = useState(true);
+    const [mic, setMic] = useState(true);
     const otherParticipant = React.useRef(null);
     const [isMuted, setMuted] = useState(false);
     const room = React.useRef(null);
@@ -96,6 +99,10 @@ const Conference = (props) => {
         disableAudioLevels: true,
         enableAnalyticsLogging: false
     }
+
+    useEffect(() => {
+        setCamera(props.isVideoCall);
+    }, [props.isVideoCall])
 
     useEffect(() => {
         if (props.isShowCall) {
@@ -200,10 +207,8 @@ const Conference = (props) => {
                 deviceId =>
                     console.log(`track audio output device was changed to ${deviceId}`));
             if (localTrack.getType() === Constants.STR_VIDEO) {
-                localTrack.attach($(`#localVideo`)[0]);
                 setLocalVideoTrack(localTrack);
             } else if (localTrack.getType() === Constants.STR_AUDIO) {
-                localTrack.attach($(`#localAudio`)[0]);
                 setLocalAudioTrack(localTrack);
             }
 
@@ -257,6 +262,17 @@ const Conference = (props) => {
 
         isJoined = true;
         localTracks.map((localTrack) => {
+            if (localTrack.getType() === Constants.STR_VIDEO) {
+                if(!props.isVideoCall){
+                    localTrack.mute();
+                }
+                localTrack.attach($(`#localVideo`)[0]);
+                setLocalVideoTrack(localTrack);
+            } else if (localTrack.getType() === Constants.STR_AUDIO) {
+                localTrack.attach($(`#localAudio`)[0]);
+                setLocalAudioTrack(localTrack);
+            }
+            
             room.current.addTrack(localTrack);
             room.current.setDisplayName(props.match.params.userId);
         });
@@ -289,8 +305,10 @@ const Conference = (props) => {
         if (localVideoTrack.length !== 0) {
             if (localVideoTrack.isMuted()) {
                 localVideoTrack.unmute();
+                setCamera(true);
             } else {
                 localVideoTrack.mute();
+                setCamera(false);
             }
         }
     }
@@ -299,8 +317,10 @@ const Conference = (props) => {
         if (localAudioTrack.length !== 0) {
             if (localAudioTrack.isMuted()) {
                 localAudioTrack.unmute();
+                setMic(true);
             } else {
                 localAudioTrack.mute();
+                setMic(false);
             }
         }
     }
@@ -322,7 +342,7 @@ const Conference = (props) => {
                 <div className={classes.black_div} style={{ visibility: isMuted === true ? 'visible' : 'collapse' }}></div>
             </div>
             <div className={classes.control_area}>
-                <ControlArea onClickCamera={handleClickCamera} onClickMic={handleClickMic} onClickCallEnd={handleCallEnd} />
+                <ControlArea onClickCamera={handleClickCamera} onClickMic={handleClickMic} onClickCallEnd={handleCallEnd} mic={mic} camera={camera}/>
             </div>
         </div>
     )

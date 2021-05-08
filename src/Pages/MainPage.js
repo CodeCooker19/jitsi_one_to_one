@@ -71,8 +71,8 @@ const CreateRoom = (props) => {
         if (otherUserId === '')
             return;
 
-        setIsShowCall(true);
         setIsVideoCall(true);
+        setIsShowCall(true);
         setOtherUserId(otherUserId);
     }
 
@@ -80,8 +80,8 @@ const CreateRoom = (props) => {
         if (otherUserId === '')
             return;
 
-        setIsShowCall(true);
         setIsVideoCall(false);
+        setIsShowCall(true);
         setOtherUserId(otherUserId);
     }
 

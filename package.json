@@ -9,8 +9,6 @@
     "@testing-library/jest-dom": "^4.2.4",
     "@testing-library/react": "^9.3.2",
     "@testing-library/user-event": "^7.1.2",
-    "electron-browser-storage": "^1.0.7",
-    "electron-is-dev": "^1.2.0",
     "history": "^5.0.0",
     "jquery": "^3.5.1",
     "prop-types": "^15.7.2",
@@ -23,22 +21,12 @@
     "validate.js": "^0.13.1"
   },
   "homepage": "./",
-  "main": "public/electron.js",
   "license": "Apache-2.0",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "build1": "electron-packager --out=winx64 --overwrite --platform=win32 --appname=clientlmcenter . --icon=./src/assets/images/production_mark.ico",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "electron-dev": "concurrently \"cross-env BROWSER=none npm start\" \"wait-on http://localhost:3000 && electron .\"",
-    "electron-pack": "electron-builder -c.extraMetadata.main=build/electron.js",
-    "preelectron-pack": "react-scripts build"
-  },
-  "build": {
-    "win": {
-      "icon": "./production_mark.ico"
-    }
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": "react-app"
@@ -58,8 +46,6 @@
   "devDependencies": {
     "concurrently": "^5.3.0",
     "cross-env": "^7.0.2",
-    "electron": "^10.1.4",
-    "electron-builder": "^22.9.1",
     "foreman": "^3.0.1",
     "wait-on": "^5.2.1"
   }

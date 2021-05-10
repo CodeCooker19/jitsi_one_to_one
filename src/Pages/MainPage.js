@@ -60,7 +60,7 @@ const CreateRoom = (props) => {
     const [isShowCall, setIsShowCall] = useState(false);
     const [isShowIncoming, setIsShowIncoming] = useState(false);
     const [otherUserId, setOtherUserId] = useState('');
-    const [isVideoCall, setIsVideoCall] = useState(false);
+    const [isVideoCall, setIsVideoCall] = useState(true);
     const [isLogout, setIsLogout] = useState(false);
 
     const changeOtherUserId = (event) => {

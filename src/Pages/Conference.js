@@ -75,10 +75,10 @@ const Conference = (props) => {
     const otherParticipant = React.useRef(null);
     const [isMuted, setMuted] = useState(false);
     const room = React.useRef(null);
+    let connection = React.useRef(null);
     const isCallEnd = React.useRef(false);
     const isLeave = React.useRef(false);
     let localTracks = [];
-    let connection = null;
     let isJoined = false;
 
     const options = {
@@ -115,12 +115,12 @@ const Conference = (props) => {
                 window.$ = $
                 window.jQuery = $
                 window.JitsiMeetJS.init(initOptions);
-                connection = new window.JitsiMeetJS.JitsiConnection(null, null, options);
+                connection.current = new window.JitsiMeetJS.JitsiConnection(null, null, options);
 
-                connection.addEventListener(window.JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED, onConnectionSuccess);
-                connection.addEventListener(window.JitsiMeetJS.events.connection.CONNECTION_FAILED, onConnectionFailed);
-                connection.addEventListener(window.JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED, disconnect);
-                connection.connect();
+                connection.current.addEventListener(window.JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED, onConnectionSuccess);
+                connection.current.addEventListener(window.JitsiMeetJS.events.connection.CONNECTION_FAILED, onConnectionFailed);
+                connection.current.addEventListener(window.JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED, disconnect);
+                connection.current.connect();
 
                 window.JitsiMeetJS.createLocalTracks({ devices: [Constants.STR_AUDIO, Constants.STR_VIDEO] })
                     .then(onLocalTracks)
@@ -137,7 +137,7 @@ const Conference = (props) => {
     }, [props.isShowCall]);
 
     const onConnectionSuccess = () => {
-        room.current = connection.initJitsiConference(Constants.STR_ROOM_NAME, confOptions);
+        room.current = connection.current.initJitsiConference(Constants.STR_ROOM_NAME, confOptions);
         room.current.on(window.JitsiMeetJS.events.conference.TRACK_ADDED, onRemoteTrack);
         room.current.on(window.JitsiMeetJS.events.conference.TRACK_REMOVED, onRemoveTrack);
         room.current.on(window.JitsiMeetJS.events.conference.DISPLAY_NAME_CHANGED, onChangeName);
@@ -168,9 +168,9 @@ const Conference = (props) => {
     }
 
     const disconnect = () => {
-        connection.removeEventListener(window.JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED, onConnectionSuccess);
-        connection.removeEventListener(window.JitsiMeetJS.events.connection.CONNECTION_FAILED, onConnectionFailed);
-        connection.removeEventListener(window.JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED, disconnect);
+        connection.current.removeEventListener(window.JitsiMeetJS.events.connection.CONNECTION_ESTABLISHED, onConnectionSuccess);
+        connection.current.removeEventListener(window.JitsiMeetJS.events.connection.CONNECTION_FAILED, onConnectionFailed);
+        connection.current.removeEventListener(window.JitsiMeetJS.events.connection.CONNECTION_DISCONNECTED, disconnect);
     }
 
     function unload() {
@@ -189,6 +189,7 @@ const Conference = (props) => {
         if (room.current !== null) {
             room.current.leave();
             room.current = null;
+            connection.current.disconnect();
         }
     }
 

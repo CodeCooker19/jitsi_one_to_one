@@ -12,8 +12,8 @@
     visibility: hidden;
 }
 .box.draggable-incoming-background{
-    width: 40vh;
-    height: 30vh;
+    width: 400px;
+    height: 250px;
     z-index: 2;
     box-shadow: 0.125rem 0 1.2rem rgb(4, 181, 250); 
     border-radius: 6px;
